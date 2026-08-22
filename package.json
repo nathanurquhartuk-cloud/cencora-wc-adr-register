@@ -1,0 +1,17 @@
+{
+  "name": "cencora-wc-adr-register",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Architecture Decision Record register for World Courier (Cencora) — GitHub Pages site, validation and reporting",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "validate": "node scripts/build.mjs --validate-only",
+    "report": "node scripts/report.mjs",
+    "serve": "npx --yes serve docs"
+  },
+  "dependencies": {
+    "gray-matter": "^4.0.3",
+    "js-yaml": "^4.1.0"
+  }
+}

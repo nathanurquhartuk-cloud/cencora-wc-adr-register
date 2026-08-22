@@ -1,0 +1,84 @@
+# Canonical map of the World Courier / Cencora estate.
+# Every ADR must reference at least one product, system or platform listed here.
+# Edit this file by PR; the build fails on unknown references so the register never drifts.
+organisation: Cencora
+business_unit: World Courier
+
+domains:
+  - id: customer-facing
+    name: Customer facing
+    description: Front door, self service, tracking and customer integration
+    products:
+      - { id: cp-modern,      name: Customer Portal (modern) }
+      - { id: cp-legacy,      name: Customer Portal (legacy) }
+      - { id: cp-china,       name: Customer Portal China }
+      - { id: psm,            name: PSM shipment monitoring }
+      - { id: customer-integrations, name: Customer integrations }
+      - { id: user-apis,      name: User APIs }
+
+  - id: transportation
+    name: Transportation
+    description: Order management, routing, dispatch and delivery
+    products:
+      - { id: tms,            name: TMS }
+      - { id: jetstream,      name: JetStream flight routing }
+      - { id: dash,           name: DASH delivery }
+      - { id: carma,          name: CARMA }
+      - { id: arc,            name: ARC }
+
+  - id: sales-enablement
+    name: Sales enablement
+    description: Pricing, quoting and onboarding
+    products:
+      - { id: conga-cpq,      name: Conga CPQ }
+      - { id: pricing,        name: Pricing }
+      - { id: onboarding,     name: Customer onboarding }
+      - { id: salesforce,     name: Salesforce }
+      - { id: qoe,            name: QOE }
+
+  - id: billing
+    name: Billing and finance
+    description: Invoicing and revenue
+    products:
+      - { id: sap,            name: SAP }
+
+  - id: data-and-platform
+    name: Data and platform
+    description: Integration, data, observability and shared services
+    products:
+      - { id: mulesoft,       name: MuleSoft }
+      - { id: omni,           name: Omni }
+      - { id: kafka,          name: Kafka event streaming }
+      - { id: databricks,     name: Databricks }
+      - { id: dup,            name: DUP }
+      - { id: zoomlogi,       name: ZoomLogi control tower }
+      - { id: mdm,            name: Master data management }
+      - { id: tap,            name: TAP shared services }
+
+# Cross-cutting platforms referenced by platforms: in ADR front matter
+platforms:
+  - { id: azure,       name: Microsoft Azure }
+  - { id: aws,         name: AWS }
+  - { id: github,      name: GitHub }
+  - { id: databricks-platform, name: Databricks platform }
+  - { id: mulesoft-anypoint,   name: MuleSoft Anypoint }
+  - { id: salesforce-platform, name: Salesforce platform }
+  - { id: sap-platform,        name: SAP S/4 }
+
+statuses:
+  - { id: proposed,   name: Proposed,   terminal: false }
+  - { id: accepted,   name: Accepted,   terminal: false }
+  - { id: rejected,   name: Rejected,   terminal: true }
+  - { id: deprecated, name: Deprecated, terminal: true }
+  - { id: superseded, name: Superseded, terminal: true }
+
+decision_types:
+  - structural
+  - integration
+  - data
+  - security
+  - platform
+  - process
+  - vendor
+
+impact_levels: [low, medium, high]

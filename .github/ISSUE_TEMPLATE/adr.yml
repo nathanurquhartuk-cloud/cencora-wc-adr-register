@@ -1,0 +1,70 @@
+name: Propose an architecture decision
+description: Raise a new ADR. A draft pull request is created automatically for review.
+title: "[ADR] "
+labels: [adr, proposed]
+body:
+  - type: markdown
+    attributes:
+      value: "Describe the decision you are proposing. Keep the title decision-shaped, e.g. *Use Kafka as the order event backbone*."
+  - type: dropdown
+    id: domain
+    attributes:
+      label: Domain
+      options: [customer-facing, transportation, sales-enablement, billing, data-and-platform]
+    validations: { required: true }
+  - type: input
+    id: products
+    attributes:
+      label: Products (comma separated ids from taxonomy.yml)
+      placeholder: tms, jetstream, psm
+    validations: { required: true }
+  - type: input
+    id: platforms
+    attributes:
+      label: Platforms (comma separated ids, optional)
+      placeholder: azure
+  - type: dropdown
+    id: decision_type
+    attributes:
+      label: Decision type
+      options: [structural, integration, data, security, platform, process, vendor]
+    validations: { required: true }
+  - type: dropdown
+    id: impact
+    attributes:
+      label: Impact
+      options: [low, medium, high]
+    validations: { required: true }
+  - type: dropdown
+    id: gxp
+    attributes:
+      label: Touches GxP / GDP controlled systems?
+      options: ["false", "true"]
+    validations: { required: true }
+  - type: input
+    id: owner
+    attributes:
+      label: Owner (name and role)
+    validations: { required: true }
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: What forces are at play? Business, technical, regulatory.
+    validations: { required: true }
+  - type: textarea
+    id: decision
+    attributes:
+      label: Decision
+      description: One sentence in active voice, then essential detail.
+    validations: { required: true }
+  - type: textarea
+    id: options
+    attributes:
+      label: Options considered
+      description: One per line, with why it was or was not chosen.
+  - type: textarea
+    id: consequences
+    attributes:
+      label: Consequences
+      description: Positive, negative, follow-ups.

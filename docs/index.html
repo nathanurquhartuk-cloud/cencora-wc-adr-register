@@ -33,6 +33,7 @@
   <button class="tab is-active" data-view="register" aria-selected="true">Register <span id="count-register" class="pill"></span></button>
   <button class="tab" data-view="changes">Changes</button>
   <button class="tab" data-view="coverage">Coverage</button>
+  <button class="tab" data-view="radar">Radar</button>
   <button class="tab" data-view="reports">Reports</button>
   <span class="generated" id="generated"></span>
 </nav>
@@ -102,6 +103,12 @@
     <section class="view" data-view="coverage">
       <div class="toolbar"><p class="result-line">Which parts of the estate have decisions on record, and which are silent. Click a product to filter the register.</p></div>
       <div class="estate" id="estate"></div>
+    </section>
+
+    <section class="view" data-view="radar">
+      <div class="toolbar"><p class="result-line">Technology positions backed by decisions. Every blip is an ADR; click it to read the reasoning. Rings move only via a superseding ADR.</p></div>
+      <div id="radar-wrap"><svg id="radar" viewBox="0 0 900 560" role="img" aria-label="Technology radar"></svg><div id="radar-legend"></div></div>
+      <div class="empty" id="radar-empty" hidden><p>No radar entries yet. Add <code>radar_ring</code> and <code>radar_quadrant</code> to an ADR's front matter and it appears here.</p></div>
     </section>
 
     <section class="view" data-view="reports">

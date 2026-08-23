@@ -132,6 +132,22 @@ button{font:inherit}
 .cell.silent{background:repeating-linear-gradient(45deg,#fff,#fff 6px,#F4F2F9 6px,#F4F2F9 12px)}
 .cell.silent .n{color:var(--rejected)}
 
+/* Radar */
+#radar-wrap{background:var(--card);border:1px solid var(--mist);border-radius:var(--radius);padding:18px;display:grid;gap:10px}
+#radar{width:100%;height:auto}
+#radar .ring{fill:none;stroke:var(--mist);stroke-width:1}
+#radar .axis{stroke:var(--mist);stroke-width:1}
+#radar .qlabel{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;fill:var(--muted)}
+#radar .rlabel{font-family:var(--mono);font-size:10px;fill:var(--faint)}
+#radar .blip{cursor:pointer}
+#radar .blip circle{fill:var(--violet);stroke:#fff;stroke-width:1.5}
+#radar .blip.hold circle{fill:var(--rejected)} #radar .blip.assess circle{fill:var(--proposed)} #radar .blip.trial circle{fill:var(--superseded)} #radar .blip.adopt circle{fill:var(--accepted)}
+#radar .blip text{font-family:var(--mono);font-size:9.5px;fill:#fff;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+#radar .blip:hover circle{stroke:var(--navy)}
+#radar-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px}
+#radar-legend .key{display:inline-flex;align-items:center;gap:6px}
+#radar-legend .key i{width:10px;height:10px;border-radius:50%;display:inline-block}
+
 /* Reports */
 .report{background:var(--card);border:1px solid var(--mist);border-radius:var(--radius);margin-bottom:14px}
 .report summary{padding:12px 16px;cursor:pointer;font-weight:500;display:flex;gap:14px;align-items:center}

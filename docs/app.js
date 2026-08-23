@@ -11,18 +11,19 @@ const fmt = (d) => (d ? new Date(d).toLocaleDateString("en-GB", { day: "2-digit"
 const IMPACT_RANK = { high: 3, medium: 2, low: 1 };
 const STATUS_RANK = { proposed: 1, accepted: 2, superseded: 3, deprecated: 4, rejected: 5 };
 
-let ADRS = [], TAX = null, CHANGES = [], REPORTS = [];
+let ADRS = [], TAX = null, CHANGES = [], REPORTS = [], RADAR = [];
 const state = { q: "", status: new Set(), products: new Set(), domains: new Set(), platforms: new Set(), types: new Set(), impact: new Set(), flags: new Set(), sort: "date:desc", view: "register", days: 7 };
 
 /* ---------- bootstrap ---------- */
 async function load() {
-  const [a, t, c, r] = await Promise.all([
+  const [a, t, c, r, rad] = await Promise.all([
     fetch("data/adrs.json").then((x) => x.json()),
     fetch("data/taxonomy.json").then((x) => x.json()),
     fetch("data/changes.json").then((x) => x.json()).catch(() => ({ changes: [] })),
     fetch("data/reports.json").then((x) => x.json()).catch(() => []),
+    fetch("data/radar.json").then((x) => x.json()).catch(() => ({ entries: [] })),
   ]);
-  ADRS = a.adrs; TAX = t; CHANGES = c.changes; REPORTS = r;
+  ADRS = a.adrs; TAX = t; CHANGES = c.changes; REPORTS = r; RADAR = rad.entries;
   $("#generated").textContent = "built " + fmt(a.generated);
   $("#raise").href = `${CONFIG.repo}/issues/new?template=adr.yml`;
   $("#repo").href = CONFIG.repo;
@@ -160,6 +161,51 @@ function renderCoverage() {
   }).join("");
 }
 
+
+/* ---------- tech radar ---------- */
+function renderRadar() {
+  const QUADS = [
+    { id: "techniques", label: "Techniques", x: 0, y: 0 },
+    { id: "platforms", label: "Platforms", x: 1, y: 0 },
+    { id: "tools", label: "Tools", x: 0, y: 1 },
+    { id: "languages", label: "Languages and frameworks", x: 1, y: 1 },
+  ];
+  const RINGS = ["adopt", "trial", "assess", "hold"];
+  const svg = $("#radar");
+  $("#radar-empty").hidden = RADAR.length > 0;
+  $("#radar-wrap").style.display = RADAR.length ? "grid" : "none";
+  if (!RADAR.length) { svg.innerHTML = ""; return; }
+  const W = 900, H = 560, CX = W / 2, CY = H / 2, R = Math.min(CX, CY) - 30;
+  const ringR = (i) => R * [0.32, 0.55, 0.78, 1][i];
+  let out = "";
+  for (let i = 3; i >= 0; i--) out += `<circle class="ring" cx="${CX}" cy="${CY}" r="${ringR(i)}"></circle>`;
+  out += `<line class="axis" x1="${CX - R}" y1="${CY}" x2="${CX + R}" y2="${CY}"></line><line class="axis" x1="${CX}" y1="${CY - R}" x2="${CX}" y2="${CY + R}"></line>`;
+  for (const q of QUADS) out += `<text class="qlabel" x="${q.x ? W - 12 : 12}" y="${q.y ? H - 10 : 20}" text-anchor="${q.x ? "end" : "start"}">${q.label}</text>`;
+  RINGS.forEach((r2, i) => { out += `<text class="rlabel" x="${CX + (i ? ringR(i - 1) : 0) + (ringR(i) - (i ? ringR(i - 1) : 0)) / 2}" y="${CY - 6}" text-anchor="middle">${r2}</text>`; });
+  const groups = {};
+  for (const e of RADAR) (groups[e.quadrant + ":" + e.ring] ??= []).push(e);
+  for (const [key, list] of Object.entries(groups)) {
+    const [qid, ring] = key.split(":");
+    const q = QUADS.find((x) => x.id === qid); const ri = RINGS.indexOf(ring);
+    const r0 = ri ? ringR(ri - 1) : 0, r1 = ringR(ri);
+    list.forEach((e, i) => {
+      const base = (q.x ? 0 : Math.PI / 2) + (q.y ? Math.PI : 0) + (q.x && !q.y ? 0 : 0);
+      const a0 = q.x && !q.y ? -Math.PI / 2 : q.x && q.y ? 0 : !q.x && q.y ? Math.PI / 2 : Math.PI;
+      const frac = (i + 1) / (list.length + 1);
+      const ang = a0 + frac * (Math.PI / 2) * 0.86 + 0.07;
+      const rad2 = r0 + (0.35 + 0.5 * ((i * 0.618) % 1)) * (r1 - r0);
+      const x = CX + rad2 * Math.cos(ang), y = CY + rad2 * Math.sin(ang);
+      const n = e.id.replace("ADR-", "");
+      out += `<g class="blip ${e.ring}" data-id="${e.id}"><title>${esc(e.id + " " + e.title + " (" + e.ring + ")")}</title><circle cx="${x}" cy="${y}" r="13"></circle><text x="${x}" y="${y}">${n}</text></g>`;
+    });
+  }
+  svg.innerHTML = out;
+  $("#radar-legend").innerHTML =
+    ["adopt", "trial", "assess", "hold"].map((r2) => `<span class="key"><i style="background:var(--${r2 === "adopt" ? "accepted" : r2 === "trial" ? "superseded" : r2 === "assess" ? "proposed" : "rejected"})"></i>${r2}</span>`).join("") +
+    `<span class="key">${RADAR.length} position(s) on the radar</span>`;
+  svg.onclick = (e) => { const g = e.target.closest(".blip"); if (g) location.hash = updateHash("adr", g.dataset.id); };
+}
+
 /* ---------- reports ---------- */
 function renderReports() {
   $("#reports").innerHTML = REPORTS.length ? REPORTS.map((r, i) => `
@@ -178,6 +224,7 @@ function openAdr(id) {
     ["Domain", esc(dm.get(a.domain)?.name)], ["Products", esc(a.product_names.join(", ")) || "—"], ["Platforms", esc(a.platforms.join(", ")) || "—"],
     ["Decision type", a.decision_type], ["Owner", esc(a.owner)], ["Decided by", esc(a.decided_by)],
     ["GxP / GDP", a.gxp_relevant ? "Relevant" : "Not relevant"], ["Security review", a.security_review],
+    ["Review by", a.review_by ? fmt(a.review_by) : "\u2014"], ["Radar", a.radar_ring ? `${a.radar_ring} \u00b7 ${a.radar_quadrant}` : "\u2014"], ["Debt refs", (a.debt_refs ?? []).join(", ") || "\u2014"],
     ["Supersedes", a.supersedes.map((s) => `<a href="#adr=${s}">${s}</a>`).join(", ") || "—"], ["Superseded by", a.superseded_by ? `<a href="#adr=${a.superseded_by}">${a.superseded_by}</a>` : "—"]];
   $("#drawer-body").innerHTML = `<div class="md"><h1>${esc(a.title)}</h1></div>
     <div class="meta-grid">${meta.map(([k, v]) => `<div><div class="k">${k}</div><div class="v">${v}</div></div>`).join("")}</div>
@@ -237,7 +284,7 @@ function setView(v) {
 }
 function render() {
   setView(state.view);
-  renderRegister(); renderChanges(); renderCoverage(); renderReports();
+  renderRegister(); renderChanges(); renderCoverage(); renderRadar(); renderReports();
   writeHash();
   const adr = new URLSearchParams(location.hash.slice(1)).get("adr"); if (adr) openAdr(adr);
 }

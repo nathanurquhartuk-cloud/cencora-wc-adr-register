@@ -15,6 +15,10 @@ security_review: not-required   # not-required | pending | complete
 supersedes: []
 superseded_by: null
 tags: []
+review_by: null             # YYYY-MM-DD; when accepted decisions should be re-examined (drives reminder issues)
+radar_ring: null            # adopt | trial | assess | hold (set with radar_quadrant to place on the tech radar)
+radar_quadrant: null        # techniques | platforms | tools | languages
+debt_refs: []               # ids from the tech debt register this decision creates or retires
 links:
   - { label: Design doc, url: "" }
 ---

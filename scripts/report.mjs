@@ -7,7 +7,7 @@ import path from "node:path";
 const ROOT = path.resolve(new URL(".", import.meta.url).pathname, "..");
 const args = process.argv.slice(2);
 const days = Number(args[args.indexOf("--days") + 1]) || 7;
-const label = days === 14 ? "Fortnightly" : days === 7 ? "Weekly" : `${days}-day`;
+const label = days >= 84 ? "Quarterly" : days === 14 ? "Fortnightly" : days === 7 ? "Weekly" : `${days}-day`;
 
 const { adrs } = JSON.parse(fs.readFileSync(path.join(ROOT, "docs/data/adrs.json"), "utf8"));
 const { changes } = JSON.parse(fs.readFileSync(path.join(ROOT, "docs/data/changes.json"), "utf8"));
@@ -24,10 +24,26 @@ const created = touched.filter((a) => new Date(a.created) >= since);
 const updated = touched.filter((a) => new Date(a.created) < since);
 const byStatus = Object.fromEntries(taxonomy.statuses.map((s) => [s.id, adrs.filter((a) => a.status === s.id).length]));
 const proposedStale = adrs.filter((a) => a.status === "proposed" && (now - new Date(a.date)) / 86400000 > 30);
-const reviewsDue = adrs.filter((a) => {
-  const m = a.body.match(/Review date:\s*(\d{4}-\d{2}-\d{2})/);
-  return m && new Date(m[1]) <= new Date(now.getTime() + 30 * 86400000);
-});
+const reviewHorizon = days >= 84 ? 90 : 30;
+const reviewsDue = adrs.filter((a) => a.review_by && new Date(a.review_by) <= new Date(now.getTime() + reviewHorizon * 86400000) && a.status === "accepted");
+
+// Decision lead time: first commit (proposal) to last status flip for accepted ADRs
+const leadTimes = adrs.filter((a) => a.status === "accepted" && a.history.length >= 1)
+  .map((a) => ({ id: a.id, days: Math.max(0, Math.round((new Date(a.updated) - new Date(a.created)) / 86400000)) }));
+const avgLead = leadTimes.length ? Math.round(leadTimes.reduce((s2, l) => s2 + l.days, 0) / leadTimes.length) : 0;
+
+// Radar snapshot for quarterly reports
+let radarBlock = "";
+try {
+  const { entries } = JSON.parse(fs.readFileSync(path.join(ROOT, "docs/data/radar.json"), "utf8"));
+  if (days >= 84 && entries.length) {
+    const rings = ["adopt", "trial", "assess", "hold"];
+    radarBlock = "\n## Tech radar snapshot\n" + rings.map((r) => {
+      const in_ = entries.filter((e) => e.ring === r);
+      return `- **${r}**: ${in_.length ? in_.map((e) => `${e.id} ${e.title}`).join("; ") : "none"}`;
+    }).join("\n") + "\n";
+  }
+} catch { /* radar.json optional */ }
 
 const row = (a) => `| ${a.id} | ${a.title} | ${a.status} | ${domainName[a.domain] ?? a.domain} | ${a.product_names.join(", ")} | ${a.impact} |`;
 const head = `| ADR | Title | Status | Domain | Products | Impact |\n|---|---|---|---|---|---|`;
@@ -41,7 +57,7 @@ const md = `# ${label} ADR change report
 
 - ${created.length} new ADR(s), ${updated.length} amended, ${inWindow.length} commit(s) touching the register.
 - ${proposedStale.length} proposal(s) open for more than 30 days.
-- ${reviewsDue.length} ADR(s) due for review within 30 days.
+- ${reviewsDue.length} ADR(s) due for review within ${reviewHorizon} days.\n- Average decision lead time (accepted): ${avgLead} day(s) across ${leadTimes.length} ADR(s).
 
 ## New this period
 ${created.length ? head + "\n" + created.map(row).join("\n") : "_None_"}
@@ -55,7 +71,8 @@ ${inWindow.length ? inWindow.map((c) => `- ${c.date.slice(0, 10)} · ${c.adr} ·
 ## Attention needed
 ${proposedStale.length ? "**Stale proposals**\n" + proposedStale.map((a) => `- ${a.id} ${a.title} (proposed ${a.date})`).join("\n") : "_No stale proposals_"}
 
-${reviewsDue.length ? "**Reviews due**\n" + reviewsDue.map((a) => `- ${a.id} ${a.title}`).join("\n") : "_No reviews due_"}
+${reviewsDue.length ? "**Reviews due**\n" + reviewsDue.map((a) => `- ${a.id} ${a.title} (review by ${a.review_by}, owner: ${a.owner})`).join("\n") : "_No reviews due_"}
+${radarBlock}
 
 ## Coverage by domain
 ${taxonomy.domains.map((d) => `- ${d.name}: ${adrs.filter((a) => a.domain === d.id).length} ADR(s); unmapped products: ${d.products.filter((p) => !adrs.some((a) => a.products.includes(p.id))).map((p) => p.name).join(", ") || "none"}`).join("\n")}

@@ -60,6 +60,19 @@ for (const file of fs.readdirSync(ADR_DIR).filter((f) => f.endsWith(".md") && !f
   if (data.status === "superseded" && !data.superseded_by) errors.push(`${where}: superseded ADRs need superseded_by`);
   const dateStr = data.date instanceof Date ? data.date.toISOString().slice(0, 10) : String(data.date);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) errors.push(`${where}: date must be YYYY-MM-DD`);
+  // Optional governance fields
+  const RINGS = ["adopt", "trial", "assess", "hold"];
+  const QUADRANTS = ["techniques", "platforms", "tools", "languages"];
+  let reviewBy = null;
+  if (data.review_by) {
+    reviewBy = data.review_by instanceof Date ? data.review_by.toISOString().slice(0, 10) : String(data.review_by);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(reviewBy)) errors.push(`${where}: review_by must be YYYY-MM-DD`);
+  }
+  if (data.radar_ring && !RINGS.includes(data.radar_ring)) errors.push(`${where}: radar_ring must be one of ${RINGS.join("|")}`);
+  if (data.radar_quadrant && !QUADRANTS.includes(data.radar_quadrant)) errors.push(`${where}: radar_quadrant must be one of ${QUADRANTS.join("|")}`);
+  if ((data.radar_ring && !data.radar_quadrant) || (!data.radar_ring && data.radar_quadrant)) errors.push(`${where}: radar_ring and radar_quadrant must be set together`);
+  const debtRefs = data.debt_refs ?? [];
+  if (!Array.isArray(debtRefs)) errors.push(`${where}: debt_refs must be a list`);
 
   const history = gitHistory(`adr/${file}`);
   const section = (name) => {
@@ -85,6 +98,10 @@ for (const file of fs.readdirSync(ADR_DIR).filter((f) => f.endsWith(".md") && !f
     supersedes: data.supersedes ?? [],
     superseded_by: data.superseded_by ?? null,
     tags: data.tags ?? [],
+    review_by: reviewBy,
+    radar_ring: data.radar_ring ?? null,
+    radar_quadrant: data.radar_quadrant ?? null,
+    debt_refs: debtRefs,
     links: (data.links ?? []).filter((l) => l && l.url),
     file: `adr/${file}`,
     summary: section("Decision").split("\n")[0].slice(0, 280),
@@ -125,3 +142,9 @@ fs.writeFileSync(path.join(OUT_DIR, "adrs.json"), JSON.stringify({ generated: ne
 fs.writeFileSync(path.join(OUT_DIR, "taxonomy.json"), JSON.stringify(taxonomy, null, 1));
 fs.writeFileSync(path.join(OUT_DIR, "changes.json"), JSON.stringify({ generated: new Date().toISOString(), changes }, null, 1));
 console.log(`✔ wrote docs/data/{adrs,taxonomy,changes}.json`);
+// Tech radar: one blip per ADR that declares a ring and quadrant. Superseded ADRs drop off; their successor carries the blip.
+const radar = adrs
+  .filter((a) => a.radar_ring && a.radar_quadrant && a.status !== "superseded" && a.status !== "rejected")
+  .map((a) => ({ id: a.id, title: a.title, ring: a.radar_ring, quadrant: a.radar_quadrant, status: a.status, impact: a.impact, date: a.date }));
+fs.writeFileSync(path.join(OUT_DIR, "radar.json"), JSON.stringify({ generated: new Date().toISOString(), entries: radar }, null, 1));
+console.log(`✔ wrote docs/data/radar.json (${radar.length} blips)`);

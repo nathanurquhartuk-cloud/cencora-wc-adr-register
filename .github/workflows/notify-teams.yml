@@ -1,0 +1,19 @@
+name: Notify on ADR change
+on:
+  push:
+    branches: [main]
+    paths: [adr/**]
+permissions: { contents: read }
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post to Teams webhook if configured
+        env:
+          WEBHOOK: ${{ secrets.TEAMS_WEBHOOK_URL }}
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+          COMMIT_URL: ${{ github.event.head_commit.url }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then echo "TEAMS_WEBHOOK_URL not set; skipping"; exit 0; fi
+          SUBJECT=$(printf '%s' "$COMMIT_MSG" | head -1 | sed 's/"/\\"/g')
+          curl -sS -H "Content-Type: application/json" -d "{\"text\":\"ADR register updated: $SUBJECT. Register: https://nathanurquhartuk-cloud.github.io/cencora-wc-adr-register/ Commit: $COMMIT_URL\"}" "$WEBHOOK"

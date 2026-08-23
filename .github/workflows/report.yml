@@ -3,6 +3,7 @@ on:
   schedule:
     - cron: "0 7 * * 1"      # Mondays 07:00 UTC — weekly
     - cron: "0 7 1,15 * *"   # 1st and 15th — fortnightly snapshot
+    - cron: "0 7 1 1,4,7,10 *"   # quarter start — quarterly governance report
   workflow_dispatch:
     inputs:
       days: { description: "Window in days (7 or 14)", default: "7" }
@@ -20,7 +21,11 @@ jobs:
       - run: |
           DAYS="${{ github.event.inputs.days }}"
           if [ -z "$DAYS" ]; then
-            case "${{ github.event.schedule }}" in "0 7 1,15 * *") DAYS=14;; *) DAYS=7;; esac
+            case "${{ github.event.schedule }}" in
+              "0 7 1 1,4,7,10 *") DAYS=90;;
+              "0 7 1,15 * *") DAYS=14;;
+              *) DAYS=7;;
+            esac
           fi
           node scripts/report.mjs --days "$DAYS"
       - uses: stefanzweifel/git-auto-commit-action@v5

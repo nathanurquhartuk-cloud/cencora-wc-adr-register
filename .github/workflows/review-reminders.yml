@@ -1,0 +1,30 @@
+name: Review reminders
+on:
+  schedule:
+    - cron: "30 7 * * 1"   # Mondays 07:30 UTC
+  workflow_dispatch:
+permissions: { contents: read, issues: write }
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm install
+      - run: npm run build
+      - name: Ensure adr-review label exists
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: gh label create adr-review --color BFD4F2 --description "ADR periodic review" || true
+      - name: Open issues for reviews due within 30 days
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: |
+          node scripts/reminders.mjs | while IFS=$'\t' read -r id title review_by owner file; do
+            issue_title="Review due: $id"
+            existing=$(gh issue list --state open --search "in:title \"$issue_title\"" --json number --jq '.[].number')
+            if [ -z "$existing" ]; then
+              body=$(printf '%s **%s** is due for review by **%s**.\n\nOwner: %s\nFile: `%s`\n\nRe-affirm it (update review_by), amend it, or raise a superseding ADR. Close this issue once done.' "$id" "$title" "$review_by" "$owner" "$file")
+              gh issue create --title "$issue_title" --label adr-review --body "$body"
+            fi
+          done

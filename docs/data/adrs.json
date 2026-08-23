@@ -1,0 +1,48 @@
+{
+ "generated": "2026-08-23T16:21:27.580Z",
+ "adrs": [
+  {
+   "id": "ADR-0001",
+   "title": "Record architecture decisions as versioned ADRs in a single register",
+   "status": "accepted",
+   "date": "2026-07-14",
+   "decided_by": "Head of Architecture and Analysis",
+   "owner": "Nathan Urquhart (Head of Architecture and Analysis)",
+   "domain": "data-and-platform",
+   "products": [
+    "tap"
+   ],
+   "product_names": [
+    "TAP shared services"
+   ],
+   "platforms": [
+    "github"
+   ],
+   "decision_type": "process",
+   "impact": "medium",
+   "gxp_relevant": true,
+   "security_review": "not-required",
+   "supersedes": [],
+   "superseded_by": null,
+   "tags": [
+    "governance",
+    "practice",
+    "audit-trail"
+   ],
+   "review_by": "2027-07-14",
+   "radar_ring": null,
+   "radar_quadrant": null,
+   "debt_refs": [],
+   "links": [],
+   "file": "adr/0001-record-architecture-decisions.md",
+   "summary": "We will record every significant architecture decision as a Markdown ADR in the `cencora-wc-adr-register` repository. Changes land only via pull request, reviewed by CODEOWNERS. A GitHub Pages site renders the register for search, filtering and reporting.",
+   "context": "World Courier decisions have historically lived in slide decks, Confluence comments and email threads. Audits in a GDP-regulated environment require a traceable rationale for system changes, and new joiners need to understand why the estate looks the way it does.",
+   "decision": "We will record every significant architecture decision as a Markdown ADR in the `cencora-wc-adr-register` repository. Changes land only via pull request, reviewed by CODEOWNERS. A GitHub Pages site renders the register for search, filtering and reporting.",
+   "consequences": "**Positive**: full audit trail, enforced taxonomy, automated weekly change reports.\n\n**Negative / accepted trade-offs**: non-engineers raise ADRs via an issue form rather than editing files directly.\n\n**Follow-ups**: link tech debt register items to ADR ids.",
+   "body": "\n## Context\n\nWorld Courier decisions have historically lived in slide decks, Confluence comments and email threads. Audits in a GDP-regulated environment require a traceable rationale for system changes, and new joiners need to understand why the estate looks the way it does.\n\n## Decision\n\nWe will record every significant architecture decision as a Markdown ADR in the `cencora-wc-adr-register` repository. Changes land only via pull request, reviewed by CODEOWNERS. A GitHub Pages site renders the register for search, filtering and reporting.\n\n## Options considered\n\n| Option | Summary | Why not / why |\n|---|---|---|\n| Confluence pages | Familiar, but no enforced schema, weak history | Drift and no machine-readable index |\n| Spreadsheet | Good for filtering, poor for rationale | No review workflow |\n| Git + Pages | Versioned, reviewable, searchable | Chosen |\n\n## Consequences\n\n**Positive**: full audit trail, enforced taxonomy, automated weekly change reports.\n\n**Negative / accepted trade-offs**: non-engineers raise ADRs via an issue form rather than editing files directly.\n\n**Follow-ups**: link tech debt register items to ADR ids.\n\n## Compliance and review\n\n- GxP / GDP impact: supports change control evidence\n- Security review: not required\n- Review date: 2027-01-14\n",
+   "created": "2026-07-14",
+   "updated": "2026-07-14",
+   "history": []
+  }
+ ]
+}

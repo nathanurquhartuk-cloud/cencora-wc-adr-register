@@ -1,0 +1,29 @@
+name: Issue to ADR draft PR
+on:
+  issues: { types: [opened] }
+permissions: { contents: write, pull-requests: write, issues: write }
+jobs:
+  draft:
+    if: contains(github.event.issue.labels.*.name, 'adr')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm install
+      - id: adr
+        run: node scripts/issue-to-adr.mjs
+        env:
+          ISSUE_JSON: ${{ toJSON(github.event.issue) }}
+      - run: npm run validate
+      - uses: peter-evans/create-pull-request@v6
+        with:
+          branch: adr/issue-${{ github.event.issue.number }}
+          title: "${{ steps.adr.outputs.id }}: ${{ github.event.issue.title }}"
+          commit-message: "${{ steps.adr.outputs.id }}: propose ${{ github.event.issue.title }}"
+          body: |
+            Draft ADR generated from #${{ github.event.issue.number }}.
+            Review the front matter and body, then request approval from the Architecture Review Board.
+            Closes #${{ github.event.issue.number }}
+          labels: adr, proposed
+          draft: true

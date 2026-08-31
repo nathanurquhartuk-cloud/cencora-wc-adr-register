@@ -1,5 +1,14 @@
 [
  {
+  "file": "reports/2026-08-31-weekly.md",
+  "label": "Weekly",
+  "from": "2026-08-24",
+  "to": "2026-08-31",
+  "created": 0,
+  "updated": 0,
+  "markdown": "# Weekly ADR change report\n\n**Period:** 2026-08-24 to 2026-08-31  \n**Register size:** 1 ADRs (0 proposed, 1 accepted, 0 rejected, 0 deprecated, 0 superseded)\n\n## Headline\n\n- 0 new ADR(s), 0 amended, 0 commit(s) touching the register.\n- 0 proposal(s) open for more than 30 days.\n- 0 ADR(s) due for review within 30 days.\n- Average decision lead time (accepted): 1 day(s) across 1 ADR(s).\n\n## New this period\n_None_\n\n## Amended this period\n_None_\n\n## Commit log\n_No changes_\n\n## Attention needed\n_No stale proposals_\n\n_No reviews due_\n\n\n## Coverage by domain\n- Customer facing: 0 ADR(s); unmapped products: Customer Portal (modern), Customer Portal (legacy), Customer Portal China, PSM shipment monitoring, Customer integrations, User APIs\n- Transportation: 0 ADR(s); unmapped products: TMS, JetStream flight routing, DASH delivery, CARMA, ARC\n- Sales enablement: 0 ADR(s); unmapped products: Conga CPQ, Pricing, Customer onboarding, Salesforce, QOE\n- Billing and finance: 0 ADR(s); unmapped products: SAP\n- Data and platform: 1 ADR(s); unmapped products: MuleSoft, Omni, Kafka event streaming, Databricks, DUP, ZoomLogi control tower, Master data management\n"
+ },
+ {
   "file": "reports/2026-08-24-weekly.md",
   "label": "Weekly",
   "from": "2026-08-17",
